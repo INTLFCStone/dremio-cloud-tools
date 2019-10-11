@@ -8,7 +8,7 @@ This deploys a Dremio cluster on Azure VMs. The deployment creates a master coor
 | Cluster size | Coordinator VM Type | Executor VM Type | No. of Executors |
 |--------------|---------------------|------------------|------------------|
 | X-Small      | Standard_D4_v3      | Standard_E16s_v3 |        1         |
-| Small        | Standard_D4_v3      | Standard_E16s_v3 |        5         |
+| Small        | Standard_D4_v3      | Standard_E8s_v3  |        3         |
 | Medium       | Standard_D8_v3      | Standard_E16s_v3 |        10        |
 | Large        | Standard_D8_v3      | Standard_E16s_v3 |        25        |
 | X-Large      | Standard_D8_v3      | Standard_E16s_v3 |        50        |
