@@ -80,11 +80,11 @@
           "executorCount": 1,
           "metadataDiskSize": 10
         },
-        "Small (5 executors)": {
+        "Small (3 executors)": {
           "coordinatorVmSize": "Standard_D4_v3",
           "coordinatorCount": 0,
-          "executorVmSize": "Standard_E16s_v3",
-          "executorCount": 5,
+          "executorVmSize": "Standard_E8s_v3",
+          "executorCount": 3,
           "metadataDiskSize": 50
         },
         "Medium (10 executors)": {
