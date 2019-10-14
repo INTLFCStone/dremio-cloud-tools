@@ -25,6 +25,8 @@ DISK_PART=${DISK_NAME}1
 DREMIO_HOME=/opt/dremio
 DREMIO_CONFIG_DIR=/etc/dremio
 DREMIO_CONFIG_FILE=$DREMIO_CONFIG_DIR/dremio.conf
+DREMIO_ENV_FILE=$DREMIO_CONFIG_DIR/dremio-env
+
 DREMIO_DATA_DIR=/var/lib/dremio
 # Azure Linux VMs have ephemeral/temporary disk
 # always mounted on /mnt/resource/dremio
@@ -114,6 +116,9 @@ function setup_executor {
           /local:/a \ \ spilling: [\"$SPILL_DIR/spill\"]" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
+  echo "DREMIO_MAX_DIRECT_MEMORY_SIZE_MB=51200" >> $DREMIO_ENV_FILE
+  echo "DREMIO_MAX_HEAP_MEMORY_SIZE_MB=10240" >> $DREMIO_ENV_FILE
+
 }
 
 function storage_create_action {
