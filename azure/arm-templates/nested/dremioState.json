@@ -121,9 +121,9 @@
   "variables": {
     "computeApiVersion": "2018-06-01",
     "location": "[resourceGroup().location]",
-    "virtualNetworkName": "[concat(parameters('dremioClusterName'), '-vnet')]",
+    "virtualNetworkName": "CentralUS-Non-Prod-VNet",
     "publicIpAddressId": "[resourceId(parameters('publicIpResourceGroupName'), 'Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]",
-    "networkSecurityGroupName": "dremio-nsg",
+    "networkSecurityGroupName": "[concat(parameters('dremioClusterName'), '-nsg')]",
     "singlePlacementGroup": "true",
     "enableAcceleratedNetworking": "false",
     "priority": "Regular",
