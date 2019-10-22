@@ -95,6 +95,7 @@ function setup_master {
 
   configure_dremio_dist
   sed -i "s/executor.enabled: true/executor.enabled: false/" $DREMIO_CONFIG_FILE
+  echo "registration.publish-host: \"$(hostname -I)\"" >> $DREMIO_CONFIG_FILE
   upgrade_master
 }
 
@@ -106,6 +107,7 @@ function setup_coordinator {
           s/executor.enabled: true/executor.enabled: false/" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
+  echo "registration.publish-host: \"$(hostname -I)\"" >> $DREMIO_CONFIG_FILE
 }
 
 function setup_executor {
@@ -116,9 +118,9 @@ function setup_executor {
           /local:/a \ \ spilling: [\"$SPILL_DIR/spill\"]" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
+  echo "registration.publish-host: \"$(hostname -I)\"" >> $DREMIO_CONFIG_FILE
   echo "DREMIO_MAX_DIRECT_MEMORY_SIZE_MB=51200" >> $DREMIO_ENV_FILE
   echo "DREMIO_MAX_HEAP_MEMORY_SIZE_MB=10240" >> $DREMIO_ENV_FILE
-
 }
 
 function storage_create_action {
