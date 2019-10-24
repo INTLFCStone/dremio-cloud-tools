@@ -204,5 +204,26 @@ function configure_dremio_dist {
 }
 
 setup_$service
-service dremio start
-chkconfig dremio on
+
+yum install epel-release -y
+yum install monit -y
+sed -i "s/use address localhost/#use address localhost/g" /etc/monitrc
+sed -i "s/allow localhost/#allow localhost/g" /etc/monitrc
+if [ "$service" == "master" ]; then
+  cat << EOF > /etc/monit.d/dremio
+check process dremio with pidfile /var/run/dremio/dremio.pid
+     start program = "/usr/sbin/service dremio start" with timeout 120 seconds
+     stop program = "/usr/sbin/service dremio stop"
+     if failed port 9047 for 3 cycles then restart
+EOF
+else
+  cat << EOF > /etc/monit.d/dremio
+check process dremio with pidfile /var/run/dremio/dremio.pid
+     start program = "/usr/sbin/service dremio start" with timeout 120 seconds
+     stop program = "/usr/sbin/service dremio stop"
+     if failed port 45678 for 3 cycles then restart
+EOF
+fi
+
+systemctl enable monit.service
+systemctl start monit.service
