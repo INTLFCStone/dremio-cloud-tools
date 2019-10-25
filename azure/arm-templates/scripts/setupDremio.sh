@@ -95,6 +95,7 @@ function setup_master {
 
   configure_dremio_dist
   sed -i "s/executor.enabled: true/executor.enabled: false/" $DREMIO_CONFIG_FILE
+  echo "services.coordinator.auto-upgrade: true" >> $DREMIO_CONFIG_FILE
   echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
   upgrade_master
 }
