@@ -95,7 +95,8 @@ function setup_master {
 
   configure_dremio_dist
   sed -i "s/executor.enabled: true/executor.enabled: false/" $DREMIO_CONFIG_FILE
-  echo "registration.publish-host: \"$(hostname -I)\"" >> $DREMIO_CONFIG_FILE
+  echo "services.coordinator.auto-upgrade: true" >> $DREMIO_CONFIG_FILE
+  echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
   upgrade_master
 }
 
@@ -107,7 +108,7 @@ function setup_coordinator {
           s/executor.enabled: true/executor.enabled: false/" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
-  echo "registration.publish-host: \"$(hostname -I)\"" >> $DREMIO_CONFIG_FILE
+  echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
 }
 
 function setup_executor {
@@ -118,7 +119,7 @@ function setup_executor {
           /local:/a \ \ spilling: [\"$SPILL_DIR/spill\"]" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
-  echo "registration.publish-host: \"$(hostname -I)\"" >> $DREMIO_CONFIG_FILE
+  echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
   echo "DREMIO_MAX_DIRECT_MEMORY_SIZE_MB=51200" >> $DREMIO_ENV_FILE
   echo "DREMIO_MAX_HEAP_MEMORY_SIZE_MB=10240" >> $DREMIO_ENV_FILE
 }
@@ -205,41 +206,25 @@ function configure_dremio_dist {
 
 setup_$service
 
-install python-setuptools -y
-easy_install supervisor
-
-echo_supervisord_conf > /etc/supervisord.conf
-sed -i "s/;[inet_http_server]/[inet_http_server]/g" /etc/supervisord.conf
-sed -i "s/;port=127.0.0.1:9001/port=*:9001/g" /etc/supervisord.conf
-sed -i "s/logfile_maxbytes=50MB/logfile_maxbytes=5MB/g" /etc/supervisord.conf
-cat >> /etc/supervisord.conf <<EOF
-[program:dremio]
-command=/opt/dremio/bin/dremio --config /etc/dremio start-fg
-user=dremio
-autostart=true
-autorestart=true
-process_name=dremio
+yum install epel-release -y
+yum install monit -y
+sed -i "s/use address localhost/#use address localhost/g" /etc/monitrc
+sed -i "s/allow localhost/#allow localhost/g" /etc/monitrc
+if [ "$service" == "master" ]; then
+  cat << EOF > /etc/monit.d/dremio
+check process dremio with pidfile /var/run/dremio/dremio.pid
+     start program = "/usr/sbin/service dremio start" with timeout 120 seconds
+     stop program = "/usr/sbin/service dremio stop"
+     if failed port 9047 for 3 cycles then restart
 EOF
-
-cat >> /etc/systemd/system/supervisord.service <<EOF
-[Unit]
-Description=Supervisor process control system for UNIX
-Documentation=http://supervisord.org
-After=network.target
-
-[Service]
-ExecStart=/usr/bin/supervisord -n -c /etc/supervisord.conf
-ExecStop=/usr/bin/supervisorctl $OPTIONS shutdown
-ExecReload=/usr/bin/supervisorctl $OPTIONS reload
-KillMode=process
-Restart=on-failure
-RestartSec=50s
-
-[Install]
-WantedBy=multi-user.target
+else
+  cat << EOF > /etc/monit.d/dremio
+check process dremio with pidfile /var/run/dremio/dremio.pid
+     start program = "/usr/sbin/service dremio start" with timeout 120 seconds
+     stop program = "/usr/sbin/service dremio stop"
+     if failed port 45678 for 3 cycles then restart
 EOF
+fi
 
-echo "DREMIO_LOG_TO_CONSOLE=1" >> $DREMIO_ENV_FILE
-
-systemctl enable supervisord.service
-systemctl start supervisord.service
+systemctl enable monit.service
+systemctl start monit.service
