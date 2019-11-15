@@ -90,7 +90,9 @@ function setup_master {
     storage_create_action "dremiodata" filesystem && \
     storage_create_action "dremiodata/accelerator" directory && \
     storage_create_action "dremiodata/uploads" directory && \
-    storage_create_action "dremiodata/results" directory
+    storage_create_action "dremiodata/results" directory && \
+    storage_create_action "dremiodata/downloads" directory && \
+    storage_create_action "dremiodata/scratch" directory
   fi
 
   configure_dremio_dist
@@ -194,6 +196,9 @@ cat >> $DREMIO_CONFIG_FILE <<EOF
 paths.accelerator: "dremioAzureStorage://:///dremiodata/accelerator"
 paths.uploads: "dremioAzureStorage://:///dremiodata/uploads"
 paths.results: "dremioAzureStorage://:///dremiodata/results"
+paths.downloads: "dremioAzureStorage://:///dremiodata/downloads"
+paths.scratch: "dremioAzureStorage://:///dremiodata/scratch"
+
 EOF
 }
 
