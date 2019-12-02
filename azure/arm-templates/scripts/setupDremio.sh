@@ -98,6 +98,7 @@ function setup_master {
   configure_dremio_dist
   sed -i "s/executor.enabled: true/executor.enabled: false/" $DREMIO_CONFIG_FILE
   echo "services.coordinator.auto-upgrade: true" >> $DREMIO_CONFIG_FILE
+  echo "debug.dist.async.enabled: false" >> $DREMIO_CONFIG_FILE
   echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
   upgrade_master
 }
@@ -110,6 +111,7 @@ function setup_coordinator {
           s/executor.enabled: true/executor.enabled: false/" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
+  echo "debug.dist.async.enabled: false" >> $DREMIO_CONFIG_FILE
   echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
 }
 
@@ -121,6 +123,7 @@ function setup_executor {
           /local:/a \ \ spilling: [\"$SPILL_DIR/spill\"]" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
+  echo "debug.dist.async.enabled: false" >> $DREMIO_CONFIG_FILE
   echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
   echo "DREMIO_MAX_DIRECT_MEMORY_SIZE_MB=51200" >> $DREMIO_ENV_FILE
   echo "DREMIO_MAX_HEAP_MEMORY_SIZE_MB=10240" >> $DREMIO_ENV_FILE
