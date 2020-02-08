@@ -39,10 +39,7 @@ function partition_disk {
 }
 
 if [ "$service" == "master" ]; then
-  lsblk -no FSTYPE $DISK_NAME | grep ext4 || partition_disk
-  mount $DISK_PART $DREMIO_DATA_DIR
   chown dremio:dremio $DREMIO_DATA_DIR
-  echo "$DISK_PART $DREMIO_DATA_DIR ext4 defaults 0 0" >> /etc/fstab
 else
   if [ -n '$use_azure_storage' ]; then
     zookeeper=$4
