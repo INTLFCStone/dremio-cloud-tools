@@ -160,7 +160,7 @@
     {
         "type": "Microsoft.Compute/disks",
         "sku": {
-            "name": "Premium_LRS",
+            "name": "StandardSSD_LRS",
             "tier": "Standard"
         },
         "name": "[parameters('dataDiskName')]",

@@ -147,7 +147,7 @@
     },
     "storageAccountName": {
       "type": "string",
-      "defaultValue": "[concat('dremio', uniqueString(parameters('dremioClusterName'), resourceGroup().id, deployment().name))]",
+      "defaultValue": "[concat(parameters('dremioClusterName'), uniqueString(parameters('dremioClusterName'), resourceGroup().id, deployment().name))]",
       "metadata": {
         "description": "Name of the storage account"
       }
