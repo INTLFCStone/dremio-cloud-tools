@@ -205,8 +205,8 @@
     "ipAllocationMethod": "Dynamic",
     "upgradeMode": "Manual",
     "namingInfix": "[toLower(substring(concat(parameters('dremioClusterName'), uniqueString(resourceGroup().id)), 0, 9))]",
-    "bePoolName": "[concat(variables('namingInfix'), 'bepool')]",
-    "baseURI": "https://raw.githubusercontent.com/INTLFCStone/dremio-cloud-tools/master/azure/arm-templates/scripts/",
+        "bePoolName": "[concat(variables('namingInfix'), 'bepool')]",
+        "baseURI": "https://raw.githubusercontent.com/INTLFCStone/dremio-cloud-tools/master/azure/arm-templates/scripts/",
     "scriptFileName": "setupDremio.sh",
     "scriptURL": "[concat(variables('baseURI'), variables('scriptFileName'))]",
     "install": false
@@ -219,8 +219,8 @@
       "location": "[variables('location')]",
       "properties": {
           "accessTier": "[parameters('storageAccessTier')]",
-          "supportsHttpsTrafficOnly": true,
-          "isHnsEnabled": true
+              "supportsHttpsTrafficOnly": true,
+                "isHnsEnabled": true
       },
       "sku": {
           "name": "[parameters('storageAccountType')]"
@@ -444,7 +444,16 @@
                     "osDisk": {
                         "createOption": "FromImage",
                         "caching": "ReadWrite"
-                    }
+                    },
+                    "dataDisks": [
+                        {
+                            "name": "cachedisk",
+                            "diskSizeGB": 2000,
+                            "lun": 0,
+                            "createOption": "Empty",
+                            "managedDisk": { "storageAccountType": "Premium_LRS" }
+                        }
+                    ]
                 },
                 "priority": "[variables('priority')]",
                 "osProfile": {
@@ -486,7 +495,7 @@
                           "fileUris": [
                             "[variables('scriptURL')]"
                           ],
-                          "commandToExecute": "[concat('DOWNLOAD_URL=\"', parameters('dremioDownloadURL'), '\" bash ', variables('scriptFileName'), ' executor ', parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', reference(concat(parameters('dremioClusterName'), '-nic'), variables('computeApiVersion')).ipConfigurations[0].properties.privateIPAddress)]"
+                          "commandToExecute": "[concat('DOWNLOAD_URL=\"', parameters('dremioDownloadURL'), '\" bash ', variables('scriptFileName'), ' executor ', parameters('storageAccountName'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ' ', first(reference(variables('nicName')).ipConfigurations).properties.privateIPAddress)]"
                         }
                       }
                     }
