@@ -6,10 +6,15 @@ if [ ! -f /opt/dremio/bin/dremio ]; then
   yum install -y java-1.8.0-openjdk-devel $DOWNLOAD_URL
 fi
 
+echo "------"
 echo $1
+echo "------"
 echo $2
+echo "------"
 echo $3
+echo "------"
 echo $4
+echo "------"
 
 service=$1
 if [ -z "$service" ]; then
@@ -59,6 +64,7 @@ elif [ "$service" == "executor" ]; then
 else
   if [ -n '$use_azure_storage' ]; then
     zookeeper=$4
+    echo "zookeeper: $zookeeper"
   else
     zookeeper=$2
   fi
@@ -134,8 +140,8 @@ function setup_executor {
   setup_spill
   sed -i "s/coordinator.master.enabled: true/coordinator.master.enabled: false/; \
           s/coordinator.enabled: true/coordinator.enabled: false/; \
-          /local:/a \ \ spilling: [\"$SPILL_DIR/spill\"]" \
-          $DREMIO_CONFIG_FILE
+          /local:/a \ \ spilling: [\"$SPILL_DIR/spill\"]" $DREMIO_CONFIG_FILE
+  echo "zookeeper: $zookeeper"
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
   echo "debug.dist.async.enabled: true" >> $DREMIO_CONFIG_FILE
   echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
