@@ -447,7 +447,6 @@
                     },
                     "dataDisks": [
                         {
-                            "name": "cachedisk",
                             "diskSizeGB": 2000,
                             "lun": 0,
                             "createOption": "Empty",
