@@ -6,6 +6,11 @@ if [ ! -f /opt/dremio/bin/dremio ]; then
   yum install -y java-1.8.0-openjdk-devel $DOWNLOAD_URL
 fi
 
+echo $1
+echo $2
+echo $3
+echo $4
+
 service=$1
 if [ -z "$service" ]; then
    echo "Require the service to start - master, coordinator or executor"
@@ -26,11 +31,13 @@ DREMIO_HOME=/opt/dremio
 DREMIO_CONFIG_DIR=/etc/dremio
 DREMIO_CONFIG_FILE=$DREMIO_CONFIG_DIR/dremio.conf
 DREMIO_ENV_FILE=$DREMIO_CONFIG_DIR/dremio-env
+DREMIO_CLOUD_CACHE_DIR=/mnt/dremiocache
 
 DREMIO_DATA_DIR=/var/lib/dremio
 # Azure Linux VMs have ephemeral/temporary disk
 # always mounted on /mnt/resource/dremio
-SPILL_DIR=/mnt/resource/dremio
+# change spill dir to use cloud cache dir - Dongyan Li
+SPILL_DIR=${DREMIO_CLOUD_CACHE_DIR}
 
 function partition_disk {
   parted $DISK_NAME mklabel msdos
@@ -43,6 +50,12 @@ if [ "$service" == "master" ]; then
   mount $DISK_PART $DREMIO_DATA_DIR
   chown dremio:dremio $DREMIO_DATA_DIR
   echo "$DISK_PART $DREMIO_DATA_DIR ext4 defaults 0 0" >> /etc/fstab
+elif [ "$service" == "executor" ]; then
+  lsblk -no FSTYPE $DISK_NAME | grep ext4 || partition_disk
+  mkdir $DREMIO_CLOUD_CACHE_DIR
+  mount $DISK_PART $DREMIO_CLOUD_CACHE_DIR
+  chown dremio:dremio $DREMIO_CLOUD_CACHE_DIR
+  echo "$DISK_PART $DREMIO_CLOUD_CACHE_DIR ext4 defaults 0 0" >> /etc/fstab
 else
   if [ -n '$use_azure_storage' ]; then
     zookeeper=$4
@@ -97,8 +110,9 @@ function setup_master {
 
   configure_dremio_dist
   sed -i "s/executor.enabled: true/executor.enabled: false/" $DREMIO_CONFIG_FILE
+  echo "DREMIO_MAX_MEMORY_SIZE_MB=30000" >> $DREMIO_ENV_FILE
   echo "services.coordinator.auto-upgrade: true" >> $DREMIO_CONFIG_FILE
-  echo "debug.dist.async.enabled: false" >> $DREMIO_CONFIG_FILE
+  echo "debug.dist.async.enabled: true" >> $DREMIO_CONFIG_FILE
   echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
   upgrade_master
 }
@@ -123,10 +137,14 @@ function setup_executor {
           /local:/a \ \ spilling: [\"$SPILL_DIR/spill\"]" \
           $DREMIO_CONFIG_FILE
   echo "zookeeper: \"$zookeeper:2181\"" >> $DREMIO_CONFIG_FILE
-  echo "debug.dist.async.enabled: false" >> $DREMIO_CONFIG_FILE
+  echo "debug.dist.async.enabled: true" >> $DREMIO_CONFIG_FILE
   echo "registration.publish-host: \"$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)\"" >> $DREMIO_CONFIG_FILE
   echo "DREMIO_MAX_DIRECT_MEMORY_SIZE_MB=51200" >> $DREMIO_ENV_FILE
   echo "DREMIO_MAX_HEAP_MEMORY_SIZE_MB=10240" >> $DREMIO_ENV_FILE
+  echo "services.executor.cache.path.db : \"$DREMIO_CLOUD_CACHE_DIR/db\"" >> $DREMIO_CONFIG_FILE
+  echo "services.executor.cache.path.fs : [\"$DREMIO_CLOUD_CACHE_DIR/fs\"]" >> $DREMIO_CONFIG_FILE
+  echo "debug.dist.caching.enabled: true" >> $DREMIO_CONFIG_FILE
+
 }
 
 function storage_create_action {
@@ -223,14 +241,14 @@ if [ "$service" == "master" ]; then
 check process dremio with pidfile /var/run/dremio/dremio.pid
      start program = "/usr/sbin/service dremio start" with timeout 120 seconds
      stop program = "/usr/sbin/service dremio stop"
-     if failed port 9047 for 3 cycles then restart
+     if failed port 9047 for 20 cycles then restart
 EOF
 else
   cat << EOF > /etc/monit.d/dremio
 check process dremio with pidfile /var/run/dremio/dremio.pid
      start program = "/usr/sbin/service dremio start" with timeout 120 seconds
      stop program = "/usr/sbin/service dremio stop"
-     if failed port 45678 for 3 cycles then restart
+     if failed port 45678 for 10 cycles then restart
 EOF
 fi
 
