@@ -61,7 +61,6 @@ elif [ "$service" == "executor" ]; then
   mount $DISK_PART $DREMIO_CLOUD_CACHE_DIR
   chown dremio:dremio $DREMIO_CLOUD_CACHE_DIR
   echo "$DISK_PART $DREMIO_CLOUD_CACHE_DIR ext4 defaults 0 0" >> /etc/fstab
-else
   if [ -n '$use_azure_storage' ]; then
     zookeeper=$4
     echo "zookeeper: $zookeeper"
