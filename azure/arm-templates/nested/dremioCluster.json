@@ -448,6 +448,7 @@
                     "dataDisks": [
                         {
                             "diskSizeGB": 2000,
+                            "caching": "ReadOnly",
                             "lun": 0,
                             "createOption": "Empty",
                             "managedDisk": { "storageAccountType": "Premium_LRS" }

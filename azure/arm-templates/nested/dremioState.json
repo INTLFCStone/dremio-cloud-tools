@@ -201,58 +201,6 @@
       "location": "[variables('location')]",
       "properties": {
         "securityRules": [
-          {
-            "name": "default-allow-ssh",
-            "properties": {
-              "priority": 1000,
-              "sourceAddressPrefix": "*",
-              "protocol": "Tcp",
-              "destinationPortRange": "22",
-              "access": "Allow",
-              "direction": "Inbound",
-              "sourcePortRange": "*",
-              "destinationAddressPrefix": "*"
-            }
-          },
-          {
-            "name": "default-allow-dremio-ui",
-            "properties": {
-              "priority": 100,
-              "sourceAddressPrefix": "*",
-              "protocol": "Tcp",
-              "destinationPortRange": "9047",
-              "access": "Allow",
-              "direction": "Inbound",
-              "sourcePortRange": "*",
-              "destinationAddressPrefix": "*"
-            }
-          },
-          {
-            "name": "default-allow-dremio-client",
-            "properties": {
-              "priority": 110,
-              "sourceAddressPrefix": "*",
-              "protocol": "Tcp",
-              "destinationPortRange": "31010",
-              "access": "Allow",
-              "direction": "Inbound",
-              "sourcePortRange": "*",
-              "destinationAddressPrefix": "*"
-            }
-          },
-          {
-            "name": "default-allow-for-letsencrypt",
-            "properties": {
-              "priority": 1100,
-              "sourceAddressPrefix": "*",
-              "protocol": "Tcp",
-              "destinationPortRange": "80",
-              "access": "Allow",
-              "direction": "Inbound",
-              "sourcePortRange": "*",
-              "destinationAddressPrefix": "*"
-            }
-          }
         ]
       }
     },
